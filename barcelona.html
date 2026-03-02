@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Барселона · 3–5 марта</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #f4ede0;
+    --surface: #ede5d4;
+    --card:    #ffffff;
+    --gold:    #7a5520;
+    --gold-dim:rgba(122,85,32,0.1);
+    --red:     #7a2e2e;
+    --blue:    #1c4a7a;
+    --green:   #1a5c38;
+    --text:    #1c1814;
+    --muted:   #5a5048;
+    --label:   #6e6258;
+    --border:  rgba(122,85,32,0.18);
+    --shadow:  0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 5rem 4rem;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-pattern {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      repeating-linear-gradient(0deg,  transparent, transparent 59px, rgba(122,85,32,0.06) 60px),
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(122,85,32,0.06) 60px);
+  }
+  .hero-glow {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 50% at 80% 20%, rgba(122,85,32,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 5%  85%, rgba(160,80,40,0.05) 0%, transparent 50%);
+  }
+  .hero-content { position: relative; z-index: 1; }
+  .hero-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    animation: fadeUp 0.9s ease both;
+  }
+  .hero-eyebrow::before { content: ''; display: block; width: 2rem; height: 1px; background: var(--gold); }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3.5rem, 11vw, 8.5rem);
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    animation: fadeUp 0.9s ease 0.08s both;
+  }
+  .hero-meta {
+    margin-top: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    animation: fadeUp 0.9s ease 0.16s both;
+  }
+  .hero-date { font-size: 1rem; color: var(--muted); letter-spacing: 0.04em; }
+  .hero-dots { display: flex; gap: 6px; }
+  .hero-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--gold); opacity: 0.3; }
+  .hero-dot.on { opacity: 1; }
+  .hero-scroll {
+    position: absolute;
+    bottom: 3rem; right: 4rem;
+    writing-mode: vertical-rl;
+    font-size: 0.65rem;
+    letter-spacing: 0.22em;
+    color: var(--label);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    z-index: 1;
+    animation: fadeIn 1.5s ease 0.5s both;
+  }
+  .hero-scroll::after {
+    content: '';
+    width: 1px; height: 2.5rem;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+  }
+
+  /* ── OVERVIEW ── */
+  .overview {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .ov-item { padding: 2rem 2.2rem; border-right: 1px solid var(--border); }
+  .ov-item:last-child { border-right: none; }
+  .ov-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--label);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  .ov-value { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--text); line-height: 1.35; }
+  .ov-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+
+  /* ── DAY SECTIONS ── */
+  .day-section { border-bottom: 1px solid var(--border); overflow: hidden; }
+  .day-header {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 180px;
+    cursor: pointer;
+    transition: background 0.25s;
+    position: relative;
+  }
+  .day-header:hover { background: var(--surface); }
+  .day-bar {
+    width: 4px;
+    position: absolute; left: 0; top: 0; bottom: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .day-section.active .day-bar { opacity: 1; }
+  .day-1 .day-bar { background: var(--red); }
+  .day-2 .day-bar { background: var(--blue); }
+  .day-3 .day-bar { background: var(--green); }
+  .day-num-block {
+    padding: 2.5rem 2.5rem 2.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid var(--border);
+  }
+  .day-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 4.5rem;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--gold);
+    opacity: 0.18;
+    transition: opacity 0.3s;
+    user-select: none;
+  }
+  .day-section.active .day-num { opacity: 0.65; }
+  .day-date { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--text); }
+  .day-tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--label);
+    font-weight: 500;
+    margin-top: 0.3rem;
+  }
+  .day-preview { padding: 2rem 4rem 2rem 2.5rem; display: flex; align-items: center; }
+  .pills { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .pill { padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.78rem; border: 1px solid; white-space: nowrap; }
+  .day-1 .pill { border-color: rgba(122,46,46,0.3); color: #5e1a1a; background: #fdf0f0; }
+  .day-2 .pill { border-color: rgba(28,74,122,0.3); color: #12325a; background: #edf3fb; }
+  .day-3 .pill { border-color: rgba(26,92,56,0.3);  color: #0f3d24; background: #edf6f1; }
+  .day-toggle {
+    position: absolute; right: 2rem; top: 50%;
+    transform: translateY(-50%);
+    width: 32px; height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    color: var(--muted);
+    background: var(--card);
+    transition: all 0.3s;
+    user-select: none;
+  }
+  .day-section.active .day-toggle {
+    border-color: var(--gold);
+    color: var(--gold);
+    transform: translateY(-50%) rotate(45deg);
+  }
+
+  /* ── ACCORDION ── */
+  .day-body { max-height: 0; overflow: hidden; transition: max-height 0.65s cubic-bezier(0.4,0,0.2,1); background: #faf6ef; }
+  .day-section.active .day-body { max-height: 5000px; }
+
+  /* ── INNER LAYOUT: tips 1/3 left, timeline 2/3 right ── */
+  .day-inner {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    padding: 0 3rem 3rem 2rem;
+  }
+
+  /* ── TIPS PANEL (right column, 1/3) ── */
+  .tips-panel {
+    padding: 2rem 1rem 0 2.5rem;
+  }
+
+  .tip-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left-width: 3px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .day-1 .tip-card { border-left-color: var(--red); }
+  .day-2 .tip-card { border-left-color: var(--blue); }
+  .day-3 .tip-card { border-left-color: var(--green); }
+  .tip-emoji { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .tip-title { font-size: 0.85rem; font-weight: 500; color: var(--text); margin-bottom: 0.3rem; }
+  .tip-text  { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .alt-box {
+    background: var(--card);
+    border: 1px dashed var(--border);
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .alt-heading {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--label);
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  .alt-row {
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    padding-bottom: 0.8rem; margin-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .alt-row:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+  .alt-icon { font-size: 1.2rem; flex-shrink: 0; line-height: 1.4; }
+  .alt-text { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .alt-text strong { color: var(--text); }
+
+  /* ── TIMELINE (left column, 2/3) ── */
+  .timeline { padding: 2rem 2rem 0 0; }
+
+  .tl-item { display: flex; gap: 1rem; margin-bottom: 2rem; }
+  .tl-spine {
+    display: flex; flex-direction: column; align-items: center;
+    width: 16px; flex-shrink: 0; padding-top: 3px;
+  }
+  .tl-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    border: 1.5px solid var(--gold);
+    background: #faf6ef;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .tl-item:hover .tl-dot { background: var(--gold); }
+  .tl-line { width: 1px; flex: 1; min-height: 16px; background: var(--border); margin-top: 4px; }
+  .tl-body { flex: 1; }
+  .tl-time {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+  .tl-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--text);
+    line-height: 1.35;
+    margin-bottom: 0.35rem;
+  }
+  .tl-desc { font-size: 0.84rem; color: var(--muted); line-height: 1.65; }
+  .tl-tag {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.15rem 0.65rem;
+    font-size: 0.7rem;
+    border-radius: 3px;
+    background: var(--gold-dim);
+    color: var(--gold);
+    font-weight: 500;
+  }
+  .tl-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .tl-link:hover { border-bottom-color: var(--blue); }
+
+  /* ── GENERAL TIPS ── */
+  .gen-tips { background: var(--surface); padding: 4rem; border-bottom: 1px solid var(--border); }
+  .gen-tips-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--text); margin-bottom: 2.5rem; }
+  .gt-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; }
+  .gt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.4rem;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s;
+  }
+  .gt-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+  .gt-icon    { font-size: 1.6rem; margin-bottom: 0.7rem; }
+  .gt-heading { font-size: 0.88rem; font-weight: 500; color: var(--text); margin-bottom: 0.35rem; }
+  .gt-body    { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 3.5rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+  }
+  .footer-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-style: italic; color: var(--gold); }
+  .footer-meta { font-size: 0.8rem; color: var(--muted); text-align: right; line-height: 1.9; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 860px) {
+    .overview        { grid-template-columns: repeat(2, 1fr); }
+    .day-header      { grid-template-columns: 1fr; }
+    .day-num-block   { border-right: none; border-bottom: 1px solid var(--border); padding: 1.8rem 1.8rem 1.8rem 2.2rem; }
+    .day-preview     { padding: 1.5rem 3.5rem 1.5rem 1.8rem; }
+    .day-inner       { grid-template-columns: 1fr; padding: 0 1.5rem 2.5rem 1.8rem; }
+    .tips-panel      { border-left: none; border-bottom: 1px solid var(--border); padding: 1.5rem 0 1.5rem 0; }
+    .timeline        { padding: 1.5rem 0 0 0; }
+    .hero            { padding: 3rem 2rem 4rem; }
+    .hero-scroll     { right: 2rem; }
+    .gen-tips        { padding: 3rem 1.5rem; }
+    .gt-grid         { grid-template-columns: repeat(2, 1fr); }
+    footer           { flex-direction: column; gap: 1.5rem; padding: 2.5rem 1.5rem; }
+    .footer-meta     { text-align: center; }
+    .ov-item         { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-pattern"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">🇪🇸 Испания · Каталония</div>
+    <h1 class="hero-title">Барселона</h1>
+    <div class="hero-meta">
+      <span class="hero-date">3 — 5 марта 2025</span>
+      <div class="hero-dots">
+        <div class="hero-dot on"></div>
+        <div class="hero-dot on"></div>
+        <div class="hero-dot on"></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll">SCROLL</div>
+</header>
+
+<!-- OVERVIEW -->
+<div class="overview">
+  <div class="ov-item">
+    <div class="ov-label">Отель</div>
+    <div class="ov-value">El Gòtic<br>by The 5ve Soul</div>
+    <div class="ov-sub">Готический квартал</div>
+  </div>
+  <div class="ov-item">
+    <div class="ov-label">Ужин 3 марта</div>
+    <div class="ov-value">Colección by Sensi</div>
+    <div class="ov-sub">Бронь 19:45</div>
+  </div>
+  <div class="ov-item">
+    <div class="ov-label">Ужин 4 марта</div>
+    <div class="ov-value">La Muscleria</div>
+    <div class="ov-sub">Бронь 19:45</div>
+  </div>
+  <div class="ov-item">
+    <div class="ov-label">Отъезд</div>
+    <div class="ov-value">5 марта</div>
+    <div class="ov-sub">Aerobus от Pl. Catalunya</div>
+  </div>
+</div>
+
+<!-- ═══ DAY 1 ═══ -->
+<div class="day-section day-1 active" id="day1">
+  <div class="day-header" onclick="toggleDay('day1')">
+    <div class="day-bar"></div>
+    <div class="day-num-block">
+      <div class="day-num">01</div>
+      <div>
+        <div class="day-date">3 марта</div>
+        <div class="day-tag">Прибытие · Прогулка · Ужин</div>
+      </div>
+    </div>
+    <div class="day-preview">
+      <div class="pills">
+        <span class="pill">🥗 13:00 Honest Greens</span>
+        <span class="pill">🚶 15:00 Pg. de Gràcia</span>
+        <span class="pill">⛪ 16:30 Собор</span>
+        <span class="pill">🍽️ 19:45 Colección by Sensi</span>
+      </div>
+    </div>
+    <div class="day-toggle">+</div>
+  </div>
+
+  <div class="day-body">
+    <div class="day-inner">
+
+      <div class="timeline">
+
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">13:00</div>
+            <div class="tl-title">Обед — Honest Greens</div>
+            <div class="tl-desc">Свежие боулы, пицца на закваске, смузи. Здоровый фастфуд в стильном пространстве — отличный старт.</div>
+            <a class="tl-link" href="https://maps.app.goo.gl/N97nSXJwfytKX3ow9" target="_blank">↗ Открыть на карте</a>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">15:00</div>
+            <div class="tl-title">Прогулка: Diagonal → Pg. de Gràcia</div>
+            <div class="tl-desc">Самый красивый бульвар Барселоны с домами Гауди и Домом Бальо. Идти неспешно, рассматривать фасады.</div>
+            <span class="tl-tag">≈ 3 км пешком</span>
+          </div>
+        </div>
+
+
+
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">16:30</div>
+            <div class="tl-title">Собор Святого Креста ⛪</div>
+            <div class="tl-desc">Готический собор XIV века. Вход в нефы бесплатный. Во дворе — живые гуси! Перед входом часто танцуют сардану.</div>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">19:45 · БРОНЬ ✓</div>
+            <div class="tl-title">Ужин — Colección by Sensi ⭐</div>
+            <div class="tl-desc">Авторская средиземноморская кухня шефа Valentina Montoya. Дегустационное меню и локальные продукты.</div>
+            <span class="tl-tag">Бронь на 19:45</span>
+            <a class="tl-link" href="https://maps.app.goo.gl/tyz8RXdcmKgxH2PT9" target="_blank">↗ Открыть на карте</a>
+          </div>
+        </div>
+      </div><!-- /timeline -->
+
+    
+      <!-- LEFT: tips 1/3 -->
+      <div class="tips-panel">
+        <div class="tip-card">
+          <div class="tip-emoji">🚇</div>
+          <div class="tip-title">Метро до Diagonal</div>
+          <div class="tip-text">Линия L3 (зелёная) или L5 (синяя). Карта T-Casual — 10 поездок за ~12€, выгоднее разовых.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🌡️</div>
+          <div class="tip-title">Погода в марте</div>
+          <div class="tip-text">+12–16°C, обычно солнечно. Лёгкая куртка обязательна — вечером прохладно.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🕐</div>
+          <div class="tip-title">Испанское время</div>
+          <div class="tip-text">Обед: 14–16ч. Ужин: с 20ч. Colección открывается с 19:30 — ваша бронь идеальна.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🍫</div>
+          <div class="tip-title">Дом Амальер</div>
+          <div class="tip-text">Зайдите за шоколадками в красивых жестяных коробочках — лучший сувенир из Барселоны.</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: timeline 2/3 --></div><!-- /day-inner -->
+  </div><!-- /day-body -->
+</div>
+
+<!-- ═══ DAY 2 ═══ -->
+<div class="day-section day-2" id="day2">
+  <div class="day-header" onclick="toggleDay('day2')">
+    <div class="day-bar"></div>
+    <div class="day-num-block">
+      <div class="day-num">02</div>
+      <div>
+        <div class="day-date">4 марта</div>
+        <div class="day-tag">Архитектура · Парк · Море</div>
+      </div>
+    </div>
+    <div class="day-preview">
+      <div class="pills">
+        <span class="pill">⛪ 11:00 Саграда Фамилия</span>
+        <span class="pill">🏛️ 13:00 Sant Pau</span>
+        <span class="pill">🏟️ 13:30 Arc de Triomf</span>
+        <span class="pill">🥗 14:30 Honest Greens</span>
+        <span class="pill">🦪 19:45 La Muscleria</span>
+      </div>
+    </div>
+    <div class="day-toggle">+</div>
+  </div>
+
+  <div class="day-body">
+    <div class="day-inner">
+
+      <div class="timeline">
+
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">11:00 · БИЛЕТЫ ✓</div>
+            <div class="tl-title">Саграда Фамилия ⛪ ⭐</div>
+            <div class="tl-desc">Главная достопримечательность Барселоны. Нефы заполнены цветным светом витражей — зрелище незабываемое.</div>
+            <span class="tl-tag">Билеты куплены на 11:00</span>
+            <a class="tl-link" href="https://maps.app.goo.gl/FbuYU5X5HX8dRRm26" target="_blank">↗ Открыть на карте</a>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">13:00</div>
+            <div class="tl-title">Recinte Modernista de Sant Pau 🏛️</div>
+            <div class="tl-desc">Пешком по Av. de Gaudí (~10 мин). Бывшая больница — объект UNESCO. Разноцветные купола, мозаика, скульптуры.</div>
+            <a class="tl-link" href="https://maps.app.goo.gl/NxLU19Bv4k1t3kGF6" target="_blank">↗ Открыть на карте</a>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">13:30</div>
+            <div class="tl-title">Arc de Triomf + Парк Цитадели 🌳</div>
+            <div class="tl-desc">Триумфальная арка 1888 года. Огромный парк с озером и каскадным фонтаном, который молодой Гауди помогал проектировать.</div>
+            <a class="tl-link" href="https://maps.app.goo.gl/Dx2ojihqHPqRXwpF6" target="_blank">↗ Открыть на карте</a>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">14:30</div>
+            <div class="tl-title">Обед — Honest Greens Arc de Triomf</div>
+            <div class="tl-desc">Здоровый обед рядом с парком после насыщенного утра.</div>
+            <a class="tl-link" href="https://maps.app.goo.gl/55mzXoCGUtATe7rj8" target="_blank">↗ Открыть на карте</a>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">19:45 · БРОНЬ ✓</div>
+            <div class="tl-title">Ужин — La Muscleria 🦪</div>
+            <div class="tl-desc">Культовый ресторан морепродуктов. Мидии из Галисии, устрицы, осьминог — всё с лодок в день подачи.</div>
+            <span class="tl-tag">Бронь на 19:45</span>
+            <a class="tl-link" href="https://maps.app.goo.gl/55ku6kmycM1XcYnK7" target="_blank">↗ Открыть на карте</a>
+          </div>
+        </div>
+      </div><!-- /timeline -->
+
+    
+      <!-- LEFT: tips 1/3 -->
+      <div class="tips-panel">
+        <div class="tip-card">
+          <div class="tip-emoji">🎟️</div>
+          <div class="tip-title">Билеты куплены!</div>
+          <div class="tip-text">Вход на 11:00. Приходите за 10–15 минут. Башни оплачиваются отдельно — виды сверху незабываемые.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🚶</div>
+          <div class="tip-title">Маршрут дня</div>
+          <div class="tip-text">Саграда → Sant Pau пешком 10 мин. До Arc de Triomf — метро L5. Итого ~5–7 км за день.</div>
+        </div>
+        <div class="alt-box">
+          <div class="alt-heading">После обеда — на выбор</div>
+          <div class="alt-row">
+            <div class="alt-icon">🍮</div>
+            <div class="alt-text">
+              <strong>Demartini Tiramisú</strong> — лучшее тирамису в городе.<br>
+              <a class="tl-link" href="https://maps.app.goo.gl/RUCBockA6sEtPwWq5" target="_blank">↗ На карте</a>
+            </div>
+          </div>
+          <div class="alt-row">
+            <div class="alt-icon">🛒</div>
+            <div class="alt-text">
+              <strong>Mercat Santa Caterina</strong> — рынок с потрясающей мозаичной крышей.<br>
+              <a class="tl-link" href="https://maps.app.goo.gl/yhfxhNFidQ1BQ5nr9" target="_blank">↗ На карте</a>
+            </div>
+          </div>
+          <div class="alt-row">
+            <div class="alt-icon">🏖️</div>
+            <div class="alt-text">
+              <strong>Пляж Барселоны</strong> — в марте прохладно, но прогуляться вдоль набережной отлично.<br>
+              <a class="tl-link" href="https://maps.app.goo.gl/VTQpTAbUy4rKbjtKA" target="_blank">↗ На карте</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: timeline 2/3 --></div><!-- /day-inner -->
+  </div><!-- /day-body -->
+</div>
+
+<!-- ═══ DAY 3 ═══ -->
+<div class="day-section day-3" id="day3">
+  <div class="day-header" onclick="toggleDay('day3')">
+    <div class="day-bar"></div>
+    <div class="day-num-block">
+      <div class="day-num">03</div>
+      <div>
+        <div class="day-date">5 марта</div>
+        <div class="day-tag">Готик · Сувениры · Отъезд</div>
+      </div>
+    </div>
+    <div class="day-preview">
+      <div class="pills">
+        <span class="pill">🥐 11:00 Hofmann</span>
+        <span class="pill">🌹 11:30 Arquinesia</span>
+        <span class="pill">📸 12:00 Photobooth</span>
+        <span class="pill">🍴 13:00 Обед</span>
+        <span class="pill">🚌 15:00 Aerobus</span>
+      </div>
+    </div>
+    <div class="day-toggle">+</div>
+  </div>
+
+  <div class="day-body">
+    <div class="day-inner">
+
+      <div class="timeline">
+
+
+
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">11:00</div>
+            <div class="tl-title">Patisserie Hofmann 🥐</div>
+            <div class="tl-desc">Лучшие круассаны в Барселоне — слоёное масляное тесто. Очередь нормальна, оно того стоит.</div>
+            <a class="tl-link" href="https://maps.app.goo.gl/zhZZuiKo1Yjc4ByP7" target="_blank">↗ Открыть на карте</a>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">11:30</div>
+            <div class="tl-title">Arquinesia Perfumes 🌹</div>
+            <div class="tl-desc">Мастерская авторских ароматов. Каждый парфюм — история. Уникальный сувенир, которого не найти нигде.</div>
+            <a class="tl-link" href="https://maps.app.goo.gl/XwveCTz9CYAbZKoD9" target="_blank">↗ Открыть на карте</a>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">12:00</div>
+            <div class="tl-title">ANALOGIN Photobooth 📸</div>
+            <div class="tl-desc">Аналоговые фото на плёнку прямо в кабинке. Тёплое зерно, яркие цвета — момент, который хочется оставить навсегда.</div>
+            <a class="tl-link" href="https://maps.app.goo.gl/egGTnjbXqmcrQWyg9" target="_blank">↗ Открыть на карте</a>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">13:00</div>
+            <div class="tl-title">Финальный обед 🍴</div>
+            <div class="tl-desc">La Pepita — tapas-бар в Gothic Quarter. Или jamón ibérico, manchego и вино из El Corte Inglés для пикника в парке. Ешьте побольше!</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-spine"><div class="tl-dot"></div></div>
+          <div class="tl-body">
+            <div class="tl-time">15:00+</div>
+            <div class="tl-title">Aerobus → Аэропорт 🚌</div>
+            <div class="tl-desc">Автобус от Plaça de Catalunya каждые 5–10 мин, ехать ~35 мин, ~6€. Приезжайте за 2–2.5 часа до вылета.</div>
+            <span class="tl-tag">Остановка: Pl. Catalunya</span>
+          </div>
+        </div>
+      </div><!-- /timeline -->
+
+    
+      <!-- LEFT: tips 1/3 -->
+      <div class="tips-panel">
+        <div class="tip-card">
+          <div class="tip-emoji">🛄</div>
+          <div class="tip-title">Хранение багажа</div>
+          <div class="tip-text">Попросите отель хранить чемоданы — обычно бесплатно. Или Consigna Barcelona у Бокерии (~5€/день).</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🚌</div>
+          <div class="tip-title">Aerobus</div>
+          <div class="tip-text">Остановка у фонтана на Pl. de Catalunya. Билет у водителя или онлайн. Ходит 05:35 — 01:05, каждые 5–10 мин.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🛍️</div>
+          <div class="tip-title">Что привезти домой</div>
+          <div class="tip-text">Шоколад Casa Amatller, туррон, оливковое масло, парфюм Arquinesia, плёночные фото из ANALOGIN.</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: timeline 2/3 --></div><!-- /day-inner -->
+  </div><!-- /day-body -->
+</div>
+
+<!-- GENERAL TIPS -->
+<div class="gen-tips">
+  <div class="gen-tips-title">Полезное для поездки</div>
+  <div class="gt-grid">
+    <div class="gt-card">
+      <div class="gt-icon">🎟️</div>
+      <div class="gt-heading">Билеты в Саграду</div>
+      <div class="gt-body">Куплены на 11:00. Приходите заранее — за 10–15 мин до сеанса.</div>
+    </div>
+    <div class="gt-card">
+      <div class="gt-icon">🚇</div>
+      <div class="gt-heading">Метро</div>
+      <div class="gt-body">Карта T-Casual (10 поездок, ~12€) выгоднее разовых. Купить в автомате на станции.</div>
+    </div>
+    <div class="gt-card">
+      <div class="gt-icon">💶</div>
+      <div class="gt-heading">Деньги</div>
+      <div class="gt-body">Карты принимают везде. Чаевые 5–10% в ресторанах — норма, но не обязаловка.</div>
+    </div>
+    <div class="gt-card">
+      <div class="gt-icon">📱</div>
+      <div class="gt-heading">Навигация</div>
+      <div class="gt-body">Скачайте офлайн-карту Барселоны в Google Maps заранее. Все ссылки ведут напрямую на карту.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-title">¡Buen viaje! 🇪🇸</div>
+  <div class="footer-meta">
+    Барселона · 3–5 марта 2025<br>
+    El Gòtic by The 5ve Soul
+  </div>
+</footer>
+
+<script>
+  function toggleDay(id) {
+    const section = document.getElementById(id);
+    const isActive = section.classList.contains('active');
+    document.querySelectorAll('.day-section').forEach(s => s.classList.remove('active'));
+    if (!isActive) section.classList.add('active');
+  }
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.ov-item, .gt-card').forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = `opacity 0.55s ease ${i * 0.08}s, transform 0.55s ease ${i * 0.08}s`;
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
